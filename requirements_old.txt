@@ -1,0 +1,158 @@
+
+opencv-python-headless
+nvidia-tensorrt
+
+# nvidia-pyindex 
+# pycuda
+# apturl==0.5.2
+asgiref==3.7.2
+# backports.zoneinfo==0.2.1
+blinker==1.4
+# Brlapi==0.7.0
+certifi==2019.11.28
+chardet==3.0.4
+
+colorama==0.4.3
+# command-not-found==0.3
+coverage==7.2.5
+#cryptography==2.9
+# cupshelpers==1.0
+# dbus-python==1.2.16
+# defer==1.0.6
+defer==1.0.4
+distro==1.4.0
+# distro-info===0.23ubuntu1
+distro-info==1.0
+Django==4.2
+django-hCaptcha==0.2.0
+entrypoints==0.3
+flake8==6.0.0
+httplib2==0.14.0
+idna==2.8
+keyring==18.0.1
+# language-selector==0.1
+# launchpadlib==1.10.13
+lazr.restfulclient==0.14.2
+lazr.uri==1.0.3
+# louis==3.12.0
+louis==1.3
+mccabe==0.7.0
+mysqlclient==2.1.1
+netifaces==0.10.4
+oauthlib==3.1.0
+olefile==0.46
+Pillow==9.3.0
+pycairo==1.16.2
+pycodestyle==2.10.0
+pycups==1.9.73
+pyflakes==3.0.1
+PyGObject==3.36.0
+PyJWT==1.7.1
+# python-apt==2.0.0+ubuntu0.20.4.8
+python-dateutil==2.8.2
+# python-debian===0.1.36ubuntu1
+python-debian===0.1.36
+pytz==2019.3
+pyxdg==0.26
+PyYAML==5.3.1
+requests==2.22.0
+requests-unixsocket==0.2.0
+SecretStorage==2.3.1
+simplejson==3.16.0
+six==1.14.0
+sqlparse==0.4.3
+ssh-import-id==5.10
+# systemd-python==234
+typing-extensions==4.6.3
+# ubuntu-advantage-tools==27.10
+# ubuntu-drivers-common==0.0.0
+# ufw==0.36
+# unattended-upgrades==0.1
+urllib3==1.25.8
+wadllib==1.3.3
+# xkit==0.0.0
+gunicorn==20.1.0
+django-redis==5.3.0
+celery==5.1
+tencentcloud-sdk-python-captcha
+django-user-agents
+channels==4.0.0
+channels_redis==4.1.0
+cffi==1.16.0
+daphne==4.0.0
+python-magic
+py-spy
+pydub
+pympler
+djangorestframework
+
+# pedalboard
+
+dawdreamer
+
+#django-sslserver
+
+dora-search
+tensorboard==2.9
+einops
+julius>=0.2.3
+lameenc>=1.2
+openunmix
+
+torch>=1.8.1
+#torch==2.2.2  torch-2.2.2
+torchaudio>=0.8
+# torchaudio==2.0.2
+torchvision
+tqdm
+###################3
+# apt-get install ffmpeg
+###########################icassp2021s
+ffmpeg-python
+# torch
+librosa==0.8.0
+click==7.1.2
+typer==0.3.2
+spleeter==2.4.0
+soundfile
+youtube_dl
+# tqdm
+mido
+numpy==1.23.0
+#########################piano_transcription
+h5py==2.10.0
+pandas==1.3.0
+# librosa==0.6.0
+# numba==0.48
+# mido==1.2.9
+mir_eval==0.5
+matplotlib==3.0.3
+torchlibrosa==0.0.4
+sox==1.4.0
+##############################music_source_separation
+##/root/bytesep_data/train_scripts/musdb18/
+# torch==1.7.1
+# librosa==0.8.0
+# museval==0.4.0
+# h5py==2.10.0
+pytorch_lightning==1.2.1
+# numpy==1.18.5
+# torchlibrosa==0.0.9
+# matplotlib==3.3.4
+musdb==0.4.0
+museval==0.4.0
+samplerate==0.1.0
+mutagen
+
+#############nvidia
+protobuf==3.19.*
+
+pyFluidSynth
+
+# midi2audio
+
+
+onnxruntime-gpu
+
+
+

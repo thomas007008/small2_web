@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<!-- Google tag (gtag.js) -->
+{% comment %} <script async src="https://www.googletagmanager.com/gtag/js?id=G-4RGYS5DQKX"></script> {% endcomment %}
+{% block head_seo %}
+{% endblock %}  
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4RGYS5DQKX');
+</script>
+<!-- Twitter conversion tracking base code -->
+{% comment %} <script>
+    !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+    },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',
+    a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+    twq('config','oflly');
+</script> {% endcomment %}
+<!-- End Twitter conversion tracking base code -->
+<!-- <script src='https://hcaptcha.com/1/api.js' async defer></script> -->
+<!-- 验证码程序依赖(必须)。请勿修改以下程序依赖，如通过其他手段规避加载，会导致验证码无法正常更新，对抗能力无法保证，甚至引起误拦截。 -->
+<script src="https://turing.captcha.qcloud.com/TCaptcha.js"></script>
+{% comment %} <script src="https://accounts.google.com/gsi/client" async></script> {% endcomment %}
+<style>
+    .hidden {
+        visibility: hidden;
+    }
+    .visible {
+        visibility: visible;
+        /* 或者使用透明度动画效果 */
+        /* opacity: 1; */
+        /* transition: opacity 1s; */
+    }
+</style>
+
+<script>
+window.addEventListener('load', function() {
+    // 页面加载完成后要执行的代码
+    var content = document.getElementById('content');
+    content.classList.remove('hidden');
+    content.classList.add('visible');
+});
+var G_MEDIA_URL = "{{ MEDIA_URL }}";
+</script>
+
+<script>
+    window.DJANGO = {
+        error: "{{ error }}"
+    };
+</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title></title>
+    <meta property="og:type" content="article">
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="{% static 'music/img/Group_black.svg' %}">
+    <link rel="stylesheet" href="{% static 'music/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abyssinica+SIL&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Actor&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Akaya+Kanadaka&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alegreya&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alegreya+Sans+SC&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Aleo&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alice&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alike&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alike+Angular&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alkalami&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amiko&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amiri&amp;display=swap">
+    <link rel="stylesheet" href="{% static 'music/css/aos.min.css' %}">
+    <link rel="stylesheet" href="{% static 'music/css/audio.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'music/css/loading.css' %}">
+    {% comment %}<link rel="stylesheet" href="{% static 'music/css/metro-all.min.css' %}"> {% endcomment %}
+    <link rel="stylesheet" href="{% static 'music/css/Navbar-Right-Links-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'music/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'music/css/swiper.css' %}">
+    <link rel="stylesheet" href="{% static 'music/css/phone-display.css' %}">
+
+    {% block more_css %}
+    {% endblock %}
+
+    {% block tools_svg_preload %}
+    {% endblock %}
+</head>
+
+{% if user.is_authenticated %}
+    <script>
+        var userIsAuthenticated = true;
+        var logout_url = '{% url "music_app:logout" %}';
+        var csrf_token = '{% csrf_token %}';
+        var availableTime = '60 days left';
+        var currentUserEmail = '{{ current_user.email }}';
+        var currentUserProcessedEmail = '{{ current_user.processed_email}}';
+        var user_id = '{{ current_user.id }}';
+    </script>
+{% else %}
+    <script>
+        var userIsAuthenticated = false;
+        var user_id = '{{ current_user.id }}';  // 会得到 temp_xxx 格式的临时ID
+    </script>
+{% endif %}
+
+
+{% block content_body_start1 %}
+{% block content_body_start %}
+<body style="background: var(--bs-black);font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, sans-serif;">
+{% endblock %}
+    <div id="content" class="hidden">
+
+{% endblock %}
+{% block content_body_achieve %}
+    <!-- 这里是块内容 -->
+{% endblock %}
+
+{% block footer_part %}
+{% block footer_part1 %}
+        <footer class="music-footer">
+{% endblock %}    
+            <div class="container d-flex flex-column justify-content-center footer-container" style="width: 75%;height: 100%;">
+                <hr class="footer-hr" style="margin-bottom: 0px;">
+                <div class="flex-div-class">
+                    <div class="flex-div-item">
+                        {% if request.user_agent.is_mobile %}
+                            <a href="/m-tools.html" class="" style="color: var(--bs-white);font-size: 17px;font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Segoe UI", Arial, sans-serif;width: min-content;text-decoration: none;">Tools</a>
+                        {% else %}
+                            <a href="/tools.html" class="" style="color: var(--bs-white);font-size: 17px;font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Segoe UI", Arial, sans-serif;width: min-content;text-decoration: none;">Tools</a>
+                        {% endif%}
+                        
+                        
+                    </div>
+
+                </div>
+                
+        </footer>
+    </div>
+    <script src="{% static 'music/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'music/js/aos.min.js' %}"></script>
+    <script src="{% static 'music/js/bs-init.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    {% comment %}  <script src="https://turing.captcha.qcloud.com/TCaptcha.js"></script>  {% endcomment %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js"></script>
+    {% comment %} <script src="https://cdn.korzh.com/metroui/v4.5.1/js/metro.min.js"></script> {% endcomment %}
+    <script src="https://cdn.bootcdn.net/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
+    <script src="{% static 'music/js/multitrack.min.js' %}" type='module'></script>
+    <script src="{% static 'music/js/indexdb_process.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/navbar.js' %}"></script>
+    <script src="{% static 'music/js/audio.js' %}"></script>
+    <script src="{% static 'music/js/verification.js' %}"></script>
+    {% comment %} <script src="{% static 'music/js/describe.mjs' %}" type='module'></script> {% endcomment %}
+     
+    <script src="{% static 'music/js/record.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/music_edit.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/swiper.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/tools.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/user_info.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/hover.esm.js' %}" type='module'></script>
+    <script src="{% static 'music/js/regions.esm.js' %}" type='module'></script>
+    {% comment %} <script src="{% static 'music/js/wavesurfer.esm.js' %}" type='module'></script> {% endcomment %}
+    
+</body>
+
+</html>
+{% endblock %} 

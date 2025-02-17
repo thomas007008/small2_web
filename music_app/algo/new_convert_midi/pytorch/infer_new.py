@@ -1,0 +1,372 @@
+import os
+from pickle import TRUE
+import sys
+sys.path.insert(1, '/root/yyz/code/piano_transcription')
+import numpy as np
+import argparse
+import h5py
+import math
+import time
+import librosa
+import logging
+import matplotlib.pyplot as plt
+from torchlibrosa.stft import Spectrogram, LogmelFilterBank
+import torch
+ 
+from utils.utilities import (create_folder, get_filename, RegressionPostProcessor, 
+    OnsetsFramesPostProcessor, write_events_to_midi, load_audio)
+from models import Note_pedal
+from pytorch_utils import move_data_to_device, forward
+import utils.config as config
+import torch_tensorrt
+sample_rate = 16000
+window_size = 2048
+hop_size = sample_rate // 100
+mel_bins = 229
+fmin = 30
+fmax = sample_rate // 2
+
+window = 'hann'
+center = True
+pad_mode = 'reflect'
+ref = 1.0
+amin = 1e-10
+top_db = None
+
+midfeat = 1024
+# midfeat = 1792
+momentum = 0.01
+spectrogram_extractor = Spectrogram(n_fft=window_size,
+                                            hop_length=hop_size, win_length=window_size, window=window,
+                                            center=center, pad_mode=pad_mode, freeze_parameters=True)
+
+# Logmel feature extractor
+logmel_extractor = LogmelFilterBank(sr=sample_rate,
+                                            n_fft=window_size, n_mels=mel_bins, fmin=fmin, fmax=fmax, ref=ref,
+                                            amin=amin, top_db=top_db, freeze_parameters=True)
+def append_to_dict(dict, key, value):
+    
+    if key in dict.keys():
+        dict[key].append(value)
+    else:
+        dict[key] = [value]
+def forward(model, x, batch_size):
+    """Forward data to model in mini-batch. 
+    
+    Args: 
+      model: object
+      x: (N, segment_samples)
+      batch_size: int
+
+    Returns:
+      output_dict: dict, e.g. {
+        'frame_output': (segments_num, frames_num, classes_num),
+        'onset_output': (segments_num, frames_num, classes_num),
+        ...}
+    """
+    
+    output_dict = {}
+    device = next(model.parameters()).device
+    
+    pointer = 0
+    while True:
+        if pointer >= len(x):
+            break
+        
+        # batch_waveform = move_data_to_device(x[pointer : pointer + batch_size], device)
+        batch_waveform = torch.Tensor(x[pointer : pointer + batch_size])
+        batch_waveform = spectrogram_extractor(batch_waveform)
+        batch_waveform = logmel_extractor(batch_waveform)    # (batch_size, 1, time_steps, mel_bins)
+        batch_waveform = batch_waveform.transpose(1, 3)
+        batch_waveform = move_data_to_device(batch_waveform,device)
+        pointer += batch_size
+        # print("=====================>", batch_waveform.shape)
+        # exit()
+
+        with torch.no_grad():
+            model.eval()
+            # trt_ts_module = torch_tensorrt.compile(model, 
+            #     inputs= [torch_tensorrt.Input((1, 229, 1001, 1))],
+            #     enabled_precisions= {torch.float} # Run with FP16
+            # )
+            # enabled_precisions = {torch.float, torch.float}  # Run with fp16
+            # trt_ts_module = torch_tensorrt.compile(
+            #     self.model, inputs=inputs, enabled_precisions=enabled_precisions
+            # )
+            # batch_waveform.
+            # batch_output_dict = model(batch_waveform)
+            # batch_waveform = batch_waveform.half()
+            # trt_ts_module = torch.jit.load("trt_ts_module.ts")
+
+            # trt_ts_module = trt_ts_module.to(device)
+
+            # torch.jit.save(trt_ts_module, "trt_ts_module.ts")
+            # result = trt_ts_module(batch_waveform)
+            # exit()
+            # input = ["input"]
+            # output = ["output0","output1","output2","output3"]
+
+            # torch.onnx.export(model, batch_waveform, "./piano.onnx", input_names=input, output_names=output, opset_version=12, verbose = True)
+            # exit()
+            # input_data = np.random.rand(1, 229, 1001, 1)
+            # input_data = np.zeros_like(input_data)
+            # input_data = input_data.astype(np.float32)
+            # # input_data = torch.from_numpy(input_data).cuda() 
+            # input_data = torch.Tensor(input_data).to(device)        
+            batch_output_dict = model(batch_waveform)
+            pass
+            # print()
+        for key in batch_output_dict.keys():
+            # if '_list' not in key:
+            append_to_dict(output_dict, key, batch_output_dict[key].data.cpu().numpy())
+
+    for key in output_dict.keys():
+        output_dict[key] = np.concatenate(output_dict[key], axis=0)
+
+    return output_dict
+
+class PianoTranscription(object):
+    def __init__(self, model_type, checkpoint_path=None, 
+        segment_samples=16000*10, device=torch.device('cuda'), 
+        post_processor_type='regression'):
+        """Class for transcribing piano solo recording.
+
+        Args:
+          model_type: str
+          checkpoint_path: str
+          segment_samples: int
+          device: 'cuda' | 'cpu'
+        """
+
+        if 'cuda' in str(device) and torch.cuda.is_available():
+            self.device = 'cuda'
+        else:
+            self.device = 'cpu'
+
+        self.segment_samples = segment_samples
+        self.post_processor_type = post_processor_type
+        self.frames_per_second = config.frames_per_second
+        self.classes_num = config.classes_num
+        self.onset_threshold =0.1
+        self.offset_threshod = 0.1
+        self.frame_threshold = 0.1
+        self.pedal_offset_threshold = 0.1
+        self.wheel_onset_threshold = 0.0001
+
+        # Build model
+        Model = eval(model_type)
+        self.model = Model(frames_per_second=self.frames_per_second, 
+            classes_num=self.classes_num)
+
+        # Load model
+        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        self.model.load_state_dict(checkpoint['model'], strict=False)
+
+        # Parallel
+        if 'cuda' in str(self.device):
+            self.model.to(self.device)
+            print('GPU number: {}'.format(torch.cuda.device_count()))
+            # self.model = torch.nn.DataParallel(self.model)
+        else:
+            print('Using CPU.')
+
+    def transcribe(self, audio, midi_path):
+        """Transcribe an audio recording.
+
+        Args:
+          audio: (audio_samples,)
+          midi_path: str, path to write out the transcribed MIDI.
+
+        Returns:
+          transcribed_dict, dict: {'output_dict':, ..., 'est_note_events': ..., 
+            'est_pedal_events': ...}
+        """
+
+        audio = audio[None, :]  # (1, audio_samples)
+
+        # Pad audio to be evenly divided by segment_samples
+        audio_len = audio.shape[1]
+        pad_len = int(np.ceil(audio_len / self.segment_samples)) \
+            * self.segment_samples - audio_len
+
+        audio = np.concatenate((audio, np.zeros((1, int(pad_len)))), axis=1)
+
+        # Enframe to segments
+        segments = self.enframe(audio, self.segment_samples)
+        """(N, segment_samples)"""
+
+        # Forward
+        output_dict = forward(self.model, segments, batch_size=1)
+        """{'reg_onset_output': (N, segment_frames, classes_num), ...}"""
+
+        # Deframe to original length
+        for key in output_dict.keys():
+            output_dict[key] = self.deframe(output_dict[key])[0 : audio_len]
+        """output_dict: {
+          'reg_onset_output': (segment_frames, classes_num), 
+          'reg_offset_output': (segment_frames, classes_num), 
+          'frame_output': (segment_frames, classes_num), 
+          'velocity_output': (segment_frames, classes_num), 
+          'reg_pedal_onset_output': (segment_frames, 1), 
+          'reg_pedal_offset_output': (segment_frames, 1), 
+          'pedal_frame_output': (segment_frames, 1)}"""
+
+        # Post processor
+        if self.post_processor_type == 'regression':
+            """Proposed high-resolution regression post processing algorithm."""
+            post_processor = RegressionPostProcessor(self.frames_per_second, 
+                classes_num=self.classes_num, onset_threshold=self.onset_threshold, 
+                offset_threshold=self.offset_threshod, 
+                frame_threshold=self.frame_threshold, 
+                pedal_offset_threshold=self.pedal_offset_threshold)
+
+        elif self.post_processor_type == 'onsets_frames':
+            """Google's onsets and frames post processing algorithm. Only used 
+            for comparison."""
+            post_processor = OnsetsFramesPostProcessor(self.frames_per_second, 
+                self.classes_num)
+
+        # Post process output_dict to MIDI events
+        (est_note_events, est_pedal_events) = \
+            post_processor.output_dict_to_midi_events(output_dict)
+
+        # Write MIDI events to file
+        if midi_path:
+            write_events_to_midi(start_time=0, note_events=est_note_events, 
+                pedal_events=est_pedal_events, midi_path=midi_path)
+            print('Write out to {}'.format(midi_path))
+
+        transcribed_dict = {
+            'output_dict': output_dict, 
+            'est_note_events': est_note_events,
+            'est_pedal_events': est_pedal_events}
+
+        return transcribed_dict
+
+    def enframe(self, x, segment_samples):
+        """Enframe long sequence to short segments.
+
+        Args:
+          x: (1, audio_samples)
+          segment_samples: int
+
+        Returns:
+          batch: (N, segment_samples)
+        """
+        assert x.shape[1] % segment_samples == 0
+        batch = []
+
+        pointer = 0
+        while pointer + segment_samples <= x.shape[1]:
+            batch.append(x[:, int(pointer) : int(pointer) + int(segment_samples)])
+            pointer += segment_samples // 2
+
+        batch = np.concatenate(batch, axis=0)
+        return batch
+
+    def deframe(self, x):
+        """Deframe predicted segments to original sequence.
+
+        Args:
+          x: (N, segment_frames, classes_num)
+
+        Returns:
+          y: (audio_frames, classes_num)
+        """
+        if x.shape[0] == 1:
+            return x[0]
+
+        else:
+            x = x[:, 0 : -1, :]
+            """Remove an extra frame in the end of each segment caused by the
+            'center=True' argument when calculating spectrogram."""
+            (N, segment_samples, classes_num) = x.shape
+            assert segment_samples % 4 == 0
+
+            y = []
+            y.append(x[0, 0 : int(segment_samples * 0.75)])
+            for i in range(1, N - 1):
+                y.append(x[i, int(segment_samples * 0.25) : int(segment_samples * 0.75)])
+            y.append(x[-1, int(segment_samples * 0.25) :])
+            y = np.concatenate(y, axis=0)
+            return y
+
+
+def inference(args):
+    """Inference template.
+
+    Args:
+      model_type: str
+      checkpoint_path: str
+      post_processor_type: 'regression' | 'onsets_frames'. High-resolution 
+        system should use 'regression'. 'onsets_frames' is only used to compare
+        with Googl's onsets and frames system.
+      audio_path: str
+      cuda: bool
+    """
+
+    # Arugments & parameters
+    model_type = args.model_type
+    checkpoint_path = args.checkpoint_path
+    post_processor_type = args.post_processor_type
+    device = 'cuda' if args.cuda and torch.cuda.is_available() else 'cpu'
+    audio_path = args.audio_path
+    
+    sample_rate = config.sample_rate
+    segment_samples = sample_rate * config.segment_seconds
+    """Split audio to multiple 10-second segments for inference"""
+
+    # Paths
+    midi_path = 'results/{}.mid'.format(get_filename(audio_path))
+    create_folder(os.path.dirname(midi_path))
+
+    # Load audio
+    (audio, _) = load_audio(audio_path, sr=sample_rate, mono=True)
+
+    # Transcriptor
+    transcriptor = PianoTranscription(model_type, device=device, 
+        checkpoint_path=checkpoint_path, segment_samples=segment_samples, 
+        post_processor_type=post_processor_type)
+
+    # Transcribe and write out to MIDI file
+    transcribe_time = time.time()
+    transcribed_dict = transcriptor.transcribe(audio, midi_path)
+    print('Transcribe time: {:.3f} s'.format(time.time() - transcribe_time))
+
+    # Visualize for debug
+    plot = True
+    if plot:
+        output_dict = transcribed_dict['output_dict']
+        fig, axs = plt.subplots(5, 1, figsize=(15, 8), sharex=True)
+        mel = librosa.feature.melspectrogram(audio, sr=16000, n_fft=2048, hop_length=160, n_mels=229, fmin=30, fmax=8000)
+        axs[0].matshow(np.log(mel), origin='lower', aspect='auto', cmap='jet')
+        axs[1].matshow(output_dict['frame_output'].T, origin='lower', aspect='auto', cmap='jet')
+        axs[2].matshow(output_dict['reg_onset_output'].T, origin='lower', aspect='auto', cmap='jet')
+        axs[3].matshow(output_dict['reg_offset_output'].T, origin='lower', aspect='auto', cmap='jet')
+        # axs[4].plot(output_dict['pedal_frame_output'])
+        axs[0].set_xlim(0, len(output_dict['frame_output']))
+        axs[4].set_xlabel('Frames')
+        axs[0].set_title('Log mel spectrogram')
+        axs[1].set_title('frame_output')
+        axs[2].set_title('reg_onset_output')
+        axs[3].set_title('reg_offset_output')
+        # axs[4].set_title('pedal_frame_output')
+        plt.tight_layout(0, .05, 0)
+        fig_path = '_zz.pdf'.format(get_filename(audio_path))
+        plt.savefig(fig_path)
+        print('Plot to {}'.format(fig_path))
+    
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--model_type', type=str, default="Note_pedal")
+    # parser.add_argument('--checkpoint_path', type=str,  default="/home/ubuntu/data/code/piano_transcription/combile_5_11.pth")
+    parser.add_argument('--checkpoint_path', type=str,  default="/root/yyz/code/piano_transcription/checkpoints/main/Regress_onset_offset_frame_velocity_CRNN/loss_type=regress_onset_offset_frame_velocity_bce/augmentation=none/max_note_shift=0/batch_size=16/100000_iterations.pth")
+    parser.add_argument('--post_processor_type', type=str, default='regression', choices=['onsets_frames', 'regression'])
+    # parser.add_argument('--audio_path',  default="/root/yyz/code/piano_transcription/12月19日+上午12点19分.wav", type=str)
+    parser.add_argument('--audio_path',  default="/root/yyz/YYZ/data/data_g/2022/BOBO183_A06_E.G_R.wav", type=str)
+    parser.add_argument('--cuda', type= bool, default=True)
+
+    args = parser.parse_args()
+    inference(args)

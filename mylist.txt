@@ -1,0 +1,4 @@
+file '/home//workspace/music_site/music/uploads/1/algo_tmp/tmp_0__instrument_20231110_153847_305.m4a'
+file '/home//workspace/music_site/music/uploads/1/algo_tmp/tmp_1__instrument_20231110_153848_736.m4a'
+file '/home//workspace/music_site/music/uploads/1/algo_tmp/tmp_2__instrument_20231110_153850_143.m4a'
+file '/home//workspace/music_site/music/uploads/1/algo_tmp/tmp_3__instrument_20231110_153851_300.m4a'

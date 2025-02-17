@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Python: Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": ["runserver", "0.0.0.0:8000"],
+            // "program": "${workspaceFolder}/music_app/process_demucs.py",
+            "django": true
+        },
+        {
+            "name": "Attach to iOS Safari",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "webRoot": "${workspaceFolder}",
+            "url": "http://localhost:9222",
+            "remoteDebuggingPort": 9222
+          }
+    ]
+}

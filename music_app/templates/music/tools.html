@@ -1,0 +1,156 @@
+{% extends 'music/base.html' %}
+{% load static %}
+
+
+{% block tools_svg_preload %}
+
+<script>
+
+    function webIsMobileDevice() {
+        // return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        return window.innerWidth <= 991
+    }
+    
+    var ret = webIsMobileDevice();
+    console.log('webIsMobileDevice', ret)
+    // 检测移动设备的一些常见标识
+    if (ret) {
+        // 如果是移动设备，设置链接为 m-tools.html
+        if(window.location.href.indexOf('/m-tools.html') !== -1)
+            return;
+        
+        window.location.href = '/m-tools.html';
+        document.body.innerHTML = '';
+        window.stop()
+  
+    } else {
+        // 如果是非移动设备，设置链接为 tools.html
+        if(window.location.href.indexOf('/tools.html') !== -1)
+            return;
+        
+        window.location.href = '/tools.html';
+        document.body.innerHTML = '';
+        window.stop()
+       
+    }
+</script>
+
+
+
+
+
+
+{% endblock %}
+
+{% block content_body_start1 %}
+<body style="background: url('{% static 'music/img/4k_back.webp' %}') center / cover no-repeat;background-attachment: fixed; height: 100VH;width: 100%;font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Segoe UI", Arial, sans-serif;">
+{% comment %} <body style="background: url('{% static 'music/img/4k_back.webp' %}') center / cover repeat-y,black;height: 100VH;width: 100%;font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Segoe UI", Arial, sans-serif;"> {% endcomment %}
+    <section class="regist-section-aero" style="font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Segoe UI", Arial, sans-serif;">
+
+{% endblock %}
+
+{% block content_body_achieve %}
+{% csrf_token %}
+    {% comment %} <section class="regist-section-aero" style="font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Segoe UI", Arial, sans-serif;"> {% endcomment %}
+        <div class="d-flex flex-column justify-content-between div-middle">
+            <div class="container d-flex flex-column justify-content-between e-all-container" id="id-e-all-container">
+                <div id="record-algo-uuid" style="display:none"></div>
+                <div id="edit-algo-uuid" style="display:none"></div>
+                <div id="unread-num" style="display:none">0</div>
+                <div class="row item" id="first-row">
+                    <div class="col">
+                        <div class="container d-flex flex-row justify-content-between align-items-start" style="width: 100%;height: 100%;">
+                            
+  
+                            
+                            <div class="unread-notification-wrapper" style="width: 28%;height: 4vh;">
+                                
+                            </div>
+                                
+                        </div>
+                    </div>
+                </div>
+                <div id="tools-page-container" class="row item special5" style="width:100%;height:100%">
+                    <div id="tools-page-container-row" class="col d-flex flex-column justify-content-around align-items-around" style="width:100%;height:100%">
+                        <div class="row item">
+                            <div class="col d-flex d-xl-flex flex-row justify-content-center align-items-center align-items-lg-start align-items-xl-start align-items-xxl-start" style="padding: 0px;">
+                                <h1 class="d-flex flex-column justify-content-center align-items-center e-heading"><strong></strong></h1>
+                            </div>
+                        </div>
+                        <div class="row item special">
+                            <div class="col d-flex flex-column justify-content-center align-items-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start justify-content-xxl-start">
+                                <a class="d-flex flex-column justify-content-center align-items-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start justify-content-xxl-center t-enter-link  t-enter-link-left cursor-pointer" id="t-record"></a>
+                                    <p class="d-xxl-flex justify-content-xxl-center t-section-para t-enter-link-left" style="/*margin: 0px;*/margin-bottom: 0px;">Hum</p>
+                            </div>
+                            
+                            {% comment %} <div class="col d-flex flex-column justify-content-center align-items-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start justify-content-xxl-start">
+                                <form id="t-upload" class="d-flex flex-column justify-content-center align-items-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start justify-content-xxl-start t-enter-link  " method="post" enctype="multipart/form-data" action="/upload" style="background: url('/static/music/img/t12.png') top / contain no-repeat;">
+                                    <input id="fileInput" class="form-control form-control-file" type="file" name="file" style="display: none;" accept=".mp3,.wav" /></form>
+                                <p class="t-section-para " style="margin-bottom: 0px;">Upload</p>
+                            </div> {% endcomment %}
+            
+                            <div class="col d-flex flex-column justify-content-center align-items-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start justify-content-xxl-start" style="padding: 0px;">
+                                
+                            </div>
+                        </div>
+                        <div id="page-notice" class="container">
+              
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 模态框本身 -->
+        <div id="shareModal" class="share-modal">
+            <div class="share-modal-content">
+                <div class="share-modal-header">
+                    <p class="share_describe">share music</p>
+                    <span class="share-close">&times;</span>
+                </div>
+                <div class="share-options">
+                   
+                </div>
+            </div>
+        </div>
+    </section> 
+    <script src="{% static 'music/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'music/js/aos.min.js' %}"></script>
+    <script src="{% static 'music/js/bs-init.js' %}"></script>
+    <script src="{% static 'music/js/navbar.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    {% comment %}  <script src="https://turing.captcha.qcloud.com/TCaptcha.js"></script>   {% endcomment %}
+    {% comment %} <script src="{% static 'music/js/navbar.js' %}"></script> {% endcomment %}
+    <script src="{% static 'music/js/verification.js' %}"></script>
+    {% comment %} <script src="{% static 'music/js/describe.mjs' %}" type='module'></script> {% endcomment %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js"></script>
+    {% comment %} <script src="https://cdn.korzh.com/metroui/v4.5.1/js/metro.min.js"></script> {% endcomment %}
+    {% comment %} <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js"></script> {% endcomment %}
+    {% comment %} <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js"></script> {% endcomment %}
+    <script src="https://cdn.bootcdn.net/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    {% comment %} <script src="{% static 'music/js/multitrack.min.js' %}" type='module'></script> {% endcomment %}
+   
+    
+
+   
+
+    <script src="{% static 'music/js/multitrack.min.js' %}" type='module'></script>
+    <script src="{% static 'music/js/audiobuffer-to-wav.js' %}"></script>
+     
+    <script src="{% static 'music/js/record.mjs' %}" type='module'></script>
+    {% comment %} <script src="{% static 'music/js/music_edit.mjs' %}" type='module'></script> {% endcomment %}
+    <script src="{% static 'music/js/swiper.mjs' %}" type='module'></script>
+    <script src="{% static 'music/js/tools.mjs' %}" type='module'></script>
+    {% comment %} <script src="{% static 'music/js/user_info.mjs' %}" type='module'></script> {% endcomment %}
+    <!-- midi -->
+    <!-- shim -->
+
+</body>
+
+</html>
+
+{% endblock %}
+{% comment %} 删除带footer的页脚 {% endcomment %}
+{% block footer_part %}
+{% endblock %}

@@ -1,0 +1,7 @@
+music_app/models/demucs/5c90dfd2-34c22ccb.th filter=lfs diff=lfs merge=lfs -text
+music_app/models/music_source_separation/bytesep_data/resunet143_subbtandtime_accompaniment_16.4dB_500k_steps_v2.pth filter=lfs diff=lfs merge=lfs -text
+music_app/models/music_source_separation/bytesep_data/resunet143_subbtandtime_vocals_8.7dB_500k_steps_v2.pth filter=lfs diff=lfs merge=lfs -text
+music_app/models/music_source_separation/bytesep_data/mobilenet_subbtandtime_accompaniment_14.6dB_500k_steps_v2.pth filter=lfs diff=lfs merge=lfs -text
+music_app/models/music_source_separation/bytesep_data/mobilenet_subbtandtime_vocals_7.2dB_500k_steps_v2.pth filter=lfs diff=lfs merge=lfs -text
+music_app/models/piano_transcripiton/CRNN_note_F1=0.9677_pedal_F1=0.9186.pth filter=lfs diff=lfs merge=lfs -text
+music_app/models/ filter=lfs diff=lfs merge=lfs -text
